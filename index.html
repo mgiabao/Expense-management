@@ -2,7 +2,10 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f0f13">
 <title>Chi Tiêu Cá Nhân</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -447,12 +450,36 @@
     line-height: 1.45;
   }
 
+  /* ── MOBILE TOP BAR ── */
+  .mobile-topbar {
+    display: none;
+  }
+  @media (max-width: 680px) {
+    .mobile-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .mobile-topbar-left { display: flex; flex-direction: column; gap: 2px; }
+    .mobile-logo { font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 700; color: var(--accent2); }
+    .mobile-user { font-size: 11px; color: var(--muted); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mobile-topbar-right { display: flex; align-items: center; gap: 8px; }
+  }
+
   /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
 
-  /* ── RESPONSIVE ── */
+  /* ── BOTTOM NAV (mobile only, hidden on desktop) ── */
+  .bottom-nav {
+    display: none;
+  }
+
+  /* ── RESPONSIVE TABLET ── */
   @media (max-width: 900px) {
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .two-col, .analytics-grid { grid-template-columns: 1fr; }
@@ -460,17 +487,151 @@
     .sidebar { width: 200px; min-width: 200px; }
     .main { padding: 20px; }
   }
+
+  /* ── MOBILE / iPHONE ── */
   @media (max-width: 680px) {
-    .app { flex-direction: column; }
-    .sidebar { width: 100%; min-width: unset; height: auto; flex-direction: row; overflow-x: auto; padding: 12px; }
-    .logo, .month-picker, .budget-widget { display: none; }
-    .nav-section { display: flex; flex-direction: row; padding: 0; }
-    .nav-label { display: none; }
-    .nav-item { flex-direction: column; gap: 4px; font-size: 11px; padding: 8px 10px; white-space: nowrap; }
-    .main { padding: 16px; }
-    .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-    .cat-picker { grid-template-columns: repeat(5, 1fr); }
-    .budget-grid { grid-template-columns: 1fr; }
+    /* Layout: stack vertically, sidebar hidden */
+    .app {
+      flex-direction: column;
+      height: 100dvh;
+      overflow: hidden;
+    }
+    .sidebar {
+      display: none !important;
+    }
+
+    /* Main content area scrolls above bottom nav */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 16px 16px calc(80px + env(safe-area-inset-bottom));
+      padding-top: calc(16px + env(safe-area-inset-top));
+    }
+
+    /* ── BOTTOM NAVIGATION BAR ── */
+    .bottom-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(24, 24, 31, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .bottom-nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 10px 0 8px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 500;
+      transition: color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 56px;
+    }
+    .bottom-nav-item .nav-icon { font-size: 22px; line-height: 1; }
+    .bottom-nav-item.active { color: var(--accent2); }
+    .bottom-nav-item:active { opacity: 0.7; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .page-header .submit-btn {
+      width: 100%;
+      padding: 12px 18px;
+      font-size: 14px;
+    }
+    .page-title { font-size: 20px; }
+
+    /* ── STAT CARDS ── */
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .stat-card { padding: 14px 14px; }
+    .stat-value { font-size: 18px; }
+    .stat-label { font-size: 11px; }
+
+    /* ── CARDS ── */
+    .card { padding: 16px; }
+    .two-col, .analytics-grid { grid-template-columns: 1fr; gap: 14px; }
+    .analytics-full { grid-column: 1; }
+
+    /* ── FORM ── */
+    .form-grid { grid-template-columns: 1fr; gap: 14px; }
+    .form-group.full { grid-column: 1; }
+    .type-toggle { grid-column: 1; }
+    .cat-picker {
+      grid-template-columns: repeat(5, 1fr);
+      grid-column: 1;
+      gap: 6px;
+    }
+    .cat-btn { padding: 10px 4px; font-size: 11px; }
+    .cat-btn .emoji { font-size: 20px; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      font-size: 16px; /* prevent iOS zoom */
+      padding: 13px 14px;
+    }
+    .submit-btn { padding: 15px; font-size: 15px; }
+
+    /* ── TRANSACTIONS ── */
+    .txn-controls {
+      flex-direction: column;
+      gap: 10px;
+    }
+    .txn-controls input,
+    .txn-controls select {
+      width: 100%;
+      font-size: 16px;
+      padding: 11px 14px;
+    }
+    .txn-table { font-size: 13px; }
+    .txn-table td { padding: 10px 10px; }
+    .txn-table th { padding: 0 10px 10px; }
+
+    /* ── BUDGET ── */
+    .budget-grid { grid-template-columns: 1fr; gap: 12px; }
+    .budget-input-row input { font-size: 16px; }
+
+    /* ── CHART ── */
+    .chart-wrap { height: 180px; }
+
+    /* ── AUTH SCREEN ── */
+    .auth-screen { padding: 16px; align-items: flex-end; }
+    .auth-card {
+      border-radius: 24px 24px 16px 16px;
+      padding: 28px 20px;
+      padding-bottom: calc(28px + env(safe-area-inset-bottom));
+    }
+    .auth-card input { font-size: 16px; }
+
+    /* ── MINI TXN LIST ── */
+    .txn-mini { padding: 12px 0; }
+    .txn-icon { width: 40px; height: 40px; }
+  }
+
+  /* ── EXTRA SMALL (iPhone SE) ── */
+  @media (max-width: 375px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-value { font-size: 16px; }
+    .cat-picker { grid-template-columns: repeat(5, 1fr); gap: 4px; }
+    .cat-btn { padding: 8px 2px; font-size: 10px; }
   }
 </style>
 </head>
@@ -553,6 +714,18 @@
 
   <!-- MAIN -->
   <main class="main">
+
+    <!-- MOBILE TOP BAR -->
+    <div class="mobile-topbar" id="mobileTopbar">
+      <div class="mobile-topbar-left">
+        <div class="mobile-logo">💸 Ví Cá Nhân</div>
+        <div class="mobile-user" id="mobileUserEmail"></div>
+      </div>
+      <div class="mobile-topbar-right">
+        <select id="monthFilterMobile" onchange="syncMobileFilter()" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:6px 10px;font-size:13px;font-family:'Be Vietnam Pro',sans-serif;outline:none;"></select>
+        <button onclick="logout()" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--muted);padding:6px 10px;font-size:12px;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;">Thoát</button>
+      </div>
+    </div>
 
     <!-- OVERVIEW -->
     <div class="page active" id="page-overview">
@@ -733,6 +906,30 @@
 </div>
 
 <div id="toast"></div>
+
+<!-- BOTTOM NAV (mobile) -->
+<nav class="bottom-nav" id="bottomNav">
+  <div class="bottom-nav-item active" id="bnav-overview" onclick="showPage('overview')">
+    <span class="nav-icon">📊</span>
+    <span>Tổng quan</span>
+  </div>
+  <div class="bottom-nav-item" id="bnav-add" onclick="showPage('add')">
+    <span class="nav-icon">➕</span>
+    <span>Thêm</span>
+  </div>
+  <div class="bottom-nav-item" id="bnav-transactions" onclick="showPage('transactions')">
+    <span class="nav-icon">📋</span>
+    <span>Lịch sử</span>
+  </div>
+  <div class="bottom-nav-item" id="bnav-budget" onclick="showPage('budget')">
+    <span class="nav-icon">🎯</span>
+    <span>Ngân sách</span>
+  </div>
+  <div class="bottom-nav-item" id="bnav-analytics" onclick="showPage('analytics')">
+    <span class="nav-icon">📈</span>
+    <span>Phân tích</span>
+  </div>
+</nav>
 
 <script>
 // ───────── DATA ─────────
@@ -992,15 +1189,29 @@ async function loadBudgets() {
 
 function populateMonthFilter() {
   const sel = document.getElementById('monthFilter');
+  const selMobile = document.getElementById('monthFilterMobile');
   const months = new Set(txns.map(t=>monthOf(t.date)));
   const cm = monthOf(today());
   months.add(cm);
   const sorted = Array.from(months).sort().reverse();
-  sel.innerHTML = sorted.map(m => {
+  const opts = sorted.map(m => {
     const [y,mo] = m.split('-');
     const label = `Tháng ${parseInt(mo)}/${y}`;
     return `<option value="${m}" ${m===cm?'selected':''}>${label}</option>`;
   }).join('');
+  sel.innerHTML = opts;
+  if(selMobile) selMobile.innerHTML = opts;
+  // Populate mobile user
+  const mobileUserEl = document.getElementById('mobileUserEmail');
+  if(mobileUserEl && currentUser) mobileUserEl.textContent = currentUser.email || '';
+}
+
+function syncMobileFilter() {
+  const mob = document.getElementById('monthFilterMobile');
+  const desk = document.getElementById('monthFilter');
+  if(mob && desk) desk.value = mob.value;
+  filterMonth = mob?.value || desk?.value || monthOf(today());
+  loadBudgets().then(()=>{ refreshAll(); renderTransactions(); renderBudget(); });
 }
 
 async function applyFilters() {
@@ -1023,6 +1234,11 @@ function showPage(name) {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const map = {overview:0,add:1,transactions:2,budget:3,analytics:4};
   document.querySelectorAll('.nav-item')[map[name]]?.classList.add('active');
+  // Sync bottom nav
+  document.querySelectorAll('.bottom-nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('bnav-'+name)?.classList.add('active');
+  // Scroll to top
+  document.querySelector('.main')?.scrollTo(0, 0);
   if(name==='overview') renderOverview();
   if(name==='transactions') renderTransactions();
   if(name==='analytics') renderAnalytics();
