@@ -409,6 +409,44 @@
   }
   .logout-btn:hover { color:#e74c3c; border-color:#e74c3c; }
 
+
+  .auth-mode-tabs {
+    display: flex;
+    gap: 8px;
+    margin: 14px 0 6px;
+    padding: 4px;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  .auth-tab {
+    flex: 1;
+    padding: 9px 10px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .auth-tab.active {
+    background: var(--accent);
+    color: #fff;
+  }
+  .auth-extra { display: none; }
+  .auth-extra.show { display: block; }
+  .auth-help {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
   /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -442,14 +480,31 @@
   <div class="auth-card">
     <div class="auth-title">💸 Ví Cá Nhân</div>
     <div class="auth-sub">Đăng nhập để lưu chi tiêu lên Supabase và đồng bộ giữa máy tính / điện thoại.</div>
+    <div class="auth-mode-tabs">
+      <button id="loginTab" class="auth-tab active" onclick="setAuthMode('login')">Đăng nhập</button>
+      <button id="signupTab" class="auth-tab" onclick="setAuthMode('signup')">Tạo tài khoản</button>
+    </div>
+
+    <div id="signupExtra" class="auth-extra">
+      <label>Họ tên</label>
+      <input type="text" id="authName" placeholder="Tên của bạn" autocomplete="name">
+    </div>
+
     <label>Email</label>
     <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email">
+
     <label>Mật khẩu</label>
-    <input type="password" id="authPassword" placeholder="Mật khẩu" autocomplete="current-password">
-    <div class="auth-actions">
-      <button class="auth-btn primary" onclick="login()">Đăng nhập</button>
-      <button class="auth-btn secondary" onclick="signup()">Tạo tài khoản</button>
+    <input type="password" id="authPassword" placeholder="Mật khẩu tối thiểu 6 ký tự" autocomplete="current-password">
+
+    <div id="signupConfirmBox" class="auth-extra">
+      <label>Nhập lại mật khẩu</label>
+      <input type="password" id="authPasswordConfirm" placeholder="Nhập lại mật khẩu" autocomplete="new-password">
     </div>
+
+    <div class="auth-actions">
+      <button id="authSubmitBtn" class="auth-btn primary" onclick="submitAuthForm()">Đăng nhập</button>
+    </div>
+    <div class="auth-help" id="authHelp">Nếu chưa có tài khoản, bấm tab “Tạo tài khoản”.</div>
     <div id="authStatus" class="auth-status">Bạn cần điền Supabase URL và anon key trong file HTML trước khi dùng.</div>
   </div>
 </div>
@@ -697,6 +752,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_tp2jVEtjvtGQkFVNN-mSyg_Hj5jk7l4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
+let authMode = 'login';
 let txns = [];
 let budgets = {};
 let selectedType = 'expense';
@@ -751,6 +807,9 @@ function toast(msg) {
 
 // ───────── AUTH + INIT ─────────
 window.addEventListener('DOMContentLoaded', initApp);
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && document.getElementById('authScreen')?.style.display !== 'none') submitAuthForm();
+});
 
 async function initApp() {
   document.getElementById('f-date').value = today();
@@ -767,18 +826,69 @@ async function initApp() {
   await updateAuthUI();
 }
 
+
+function setAuthMode(mode) {
+  authMode = mode === 'signup' ? 'signup' : 'login';
+  const loginTab = document.getElementById('loginTab');
+  const signupTab = document.getElementById('signupTab');
+  const signupExtra = document.getElementById('signupExtra');
+  const signupConfirmBox = document.getElementById('signupConfirmBox');
+  const submitBtn = document.getElementById('authSubmitBtn');
+  const help = document.getElementById('authHelp');
+  const password = document.getElementById('authPassword');
+
+  loginTab?.classList.toggle('active', authMode === 'login');
+  signupTab?.classList.toggle('active', authMode === 'signup');
+  signupExtra?.classList.toggle('show', authMode === 'signup');
+  signupConfirmBox?.classList.toggle('show', authMode === 'signup');
+
+  if (submitBtn) submitBtn.textContent = authMode === 'signup' ? 'Tạo tài khoản' : 'Đăng nhập';
+  if (password) password.autocomplete = authMode === 'signup' ? 'new-password' : 'current-password';
+  if (help) {
+    help.textContent = authMode === 'signup'
+      ? 'Tài khoản sẽ được tạo bằng email/password Supabase. Nếu Supabase bật xác nhận email, bạn cần xác nhận email trước khi đăng nhập.'
+      : 'Nếu chưa có tài khoản, bấm tab “Tạo tài khoản”.';
+  }
+  setAuthStatus('', '');
+}
+
+async function submitAuthForm() {
+  if (authMode === 'signup') return signup();
+  return login();
+}
+
 async function signup() {
   if (!isSupabaseConfigured()) {
     setAuthStatus('Chưa cấu hình Supabase URL/key.', 'err');
     return;
   }
+  const name = document.getElementById('authName').value.trim();
   const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
+  const confirmPassword = document.getElementById('authPasswordConfirm').value;
+
+  if (!name) {
+    setAuthStatus('Vui lòng nhập họ tên.', 'err');
+    return;
+  }
   if (!email || !password) {
     setAuthStatus('Vui lòng nhập email và mật khẩu.', 'err');
     return;
   }
-  const { data, error } = await supabaseClient.auth.signUp({ email, password });
+  if (password.length < 6) {
+    setAuthStatus('Mật khẩu cần tối thiểu 6 ký tự.', 'err');
+    return;
+  }
+  if (password !== confirmPassword) {
+    setAuthStatus('Mật khẩu nhập lại không khớp.', 'err');
+    return;
+  }
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: { data: { full_name: name } }
+  });
   if (error) {
     setAuthStatus('Tạo tài khoản thất bại: ' + error.message, 'err');
     return;
@@ -836,6 +946,7 @@ async function updateAuthUI() {
     auth.style.display = 'flex';
     app.style.display = 'none';
     widget.style.display = 'none';
+    setAuthMode('login');
     setAuthStatus('Vui lòng đăng nhập để xem dữ liệu chi tiêu.', '');
   }
 }
