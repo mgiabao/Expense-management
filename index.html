@@ -1016,12 +1016,13 @@ function toast(msg) {
 function setButtonLoading(btn, loading, loadingText) {
   if (!btn) return;
   if (loading) {
-    btn.dataset.originalText = btn.textContent;
+    if (!btn.dataset.originalText) btn.dataset.originalText = btn.textContent;
     btn.textContent = loadingText || btn.textContent;
     btn.disabled = true;
     btn.classList.add('is-loading');
   } else {
     btn.textContent = btn.dataset.originalText || btn.textContent;
+    delete btn.dataset.originalText;
     btn.disabled = false;
     btn.classList.remove('is-loading');
   }
@@ -1203,20 +1204,18 @@ async function loadAllData() {
 
 async function loadTransactions() {
   if (!currentUser) return;
-  const saveBtn = document.getElementById('saveTxnBtn');
-  setButtonLoading(saveBtn, true, 'Đang lưu');
+  try {
+    const { data, error } = await supabaseClient
+      .from('expense_transactions')
+      .select('*')
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false });
 
-  const { data, error } = await supabaseClient
-    .from('expense_transactions')
-    .select('*')
-    .order('date', { ascending: false })
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    toast('Lỗi tải giao dịch: ' + error.message);
-    return;
+    if (error) throw error;
+    txns = (data || []).map(mapTxn);
+  } catch (err) {
+    toast('Lỗi tải giao dịch: ' + (err.message || err));
   }
-  txns = (data || []).map(mapTxn);
 }
 
 async function loadBudgets() {
@@ -1308,48 +1307,66 @@ function setCat(el) {
 }
 
 async function addTransaction() {
-  if (!currentUser) { toast('Vui lòng đăng nhập'); return; }
-
-  const amount = parseFloat(document.getElementById('f-amount').value);
-  const date = document.getElementById('f-date').value;
-  const desc = document.getElementById('f-desc').value.trim();
-  const note = document.getElementById('f-note').value.trim();
-
-  if(!amount || amount <= 0) { toast('⚠️ Nhập số tiền hợp lệ'); return; }
-  if(!date) { toast('⚠️ Chọn ngày'); return; }
-  if(!desc) { toast('⚠️ Nhập mô tả'); return; }
-
-  const { data, error } = await supabaseClient
-    .from('expense_transactions')
-    .insert([{
-      user_id: currentUser.id,
-      type: selectedType,
-      cat: selectedCat,
-      description: desc,
-      amount,
-      date,
-      note
-    }])
-    .select()
-    .single();
-
-  if (error) {
-    setButtonLoading(saveBtn, false);
-    toast('Lưu thất bại: ' + error.message);
+  if (!currentUser) {
+    toast('Vui lòng đăng nhập');
     return;
   }
 
-  setButtonLoading(saveBtn, false);
-  txns.unshift(mapTxn(data));
+  const saveBtn = document.getElementById('saveTxnBtn');
 
-  document.getElementById('f-amount').value = '';
-  document.getElementById('f-desc').value = '';
-  document.getElementById('f-note').value = '';
-  document.getElementById('f-date').value = today();
+  try {
+    setButtonLoading(saveBtn, true, 'Đang lưu');
 
-  populateMonthFilter();
-  toast('✓ Đã lưu giao dịch lên Supabase!');
-  showPage('overview');
+    const amount = parseFloat(document.getElementById('f-amount').value);
+    const date = document.getElementById('f-date').value;
+    const desc = document.getElementById('f-desc').value.trim();
+    const note = document.getElementById('f-note').value.trim();
+
+    if (!amount || amount <= 0) {
+      toast('⚠️ Nhập số tiền hợp lệ');
+      return;
+    }
+    if (!date) {
+      toast('⚠️ Chọn ngày');
+      return;
+    }
+    if (!desc) {
+      toast('⚠️ Nhập mô tả');
+      return;
+    }
+
+    const { data, error } = await supabaseClient
+      .from('expense_transactions')
+      .insert([{
+        user_id: currentUser.id,
+        type: selectedType,
+        cat: selectedCat,
+        description: desc,
+        amount,
+        date,
+        note
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    txns.unshift(mapTxn(data));
+
+    document.getElementById('f-amount').value = '';
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-note').value = '';
+    document.getElementById('f-date').value = today();
+
+    populateMonthFilter();
+    toast('✓ Đã lưu giao dịch lên Supabase!');
+    showPage('overview');
+  } catch (err) {
+    console.error(err);
+    toast('Lưu thất bại: ' + (err.message || err));
+  } finally {
+    setButtonLoading(saveBtn, false);
+  }
 }
 
 // ───────── OVERVIEW ─────────
@@ -1562,32 +1579,39 @@ function renderBudget() {
 }
 
 async function saveBudget(cat) {
-  if (!currentUser) { toast('Vui lòng đăng nhập'); return; }
-  const val = parseFloat(document.getElementById('blimit-'+cat).value)||0;
-  const m = getFilterMonth();
-  const btn = document.activeElement?.tagName === 'BUTTON' ? document.activeElement : null;
-  setButtonLoading(btn, true, 'Lưu');
-
-  const { error } = await supabaseClient
-    .from('expense_budgets')
-    .upsert([{
-      user_id: currentUser.id,
-      cat,
-      month: m,
-      limit_amount: val
-    }], { onConflict: 'user_id,cat,month' });
-
-  if (error) {
-    setButtonLoading(btn, false);
-    toast('Lưu ngân sách thất bại: ' + error.message);
+  if (!currentUser) {
+    toast('Vui lòng đăng nhập');
     return;
   }
 
-  setButtonLoading(btn, false);
-  budgets[cat] = val;
-  renderBudget();
-  refreshAll();
-  toast('✓ Đã cập nhật ngân sách');
+  const val = parseFloat(document.getElementById('blimit-'+cat).value)||0;
+  const m = getFilterMonth();
+  const btn = document.activeElement?.tagName === 'BUTTON' ? document.activeElement : null;
+
+  try {
+    setButtonLoading(btn, true, 'Đang lưu');
+
+    const { error } = await supabaseClient
+      .from('expense_budgets')
+      .upsert([{
+        user_id: currentUser.id,
+        cat,
+        month: m,
+        limit_amount: val
+      }], { onConflict: 'user_id,cat,month' });
+
+    if (error) throw error;
+
+    budgets[cat] = val;
+    renderBudget();
+    refreshAll();
+    toast('✓ Đã cập nhật ngân sách');
+  } catch (err) {
+    console.error(err);
+    toast('Lưu ngân sách thất bại: ' + (err.message || err));
+  } finally {
+    setButtonLoading(btn, false);
+  }
 }
 
 // ───────── ANALYTICS ─────────
