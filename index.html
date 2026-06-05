@@ -2,10 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0f0f13">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chi Tiêu Cá Nhân</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -28,6 +25,7 @@
     --mua-sam: #f06292;
     --xang: #ffb347;
     --dau-tu: #4cde8b;
+    --giai-tri: #9b5cff;
     --radius: 14px;
     --radius-sm: 8px;
     --shadow: 0 8px 32px rgba(0,0,0,0.4);
@@ -252,7 +250,7 @@
   .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
   .form-group select option { background: var(--surface); }
 
-  .cat-picker { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; grid-column: 1 / -1; }
+  .cat-picker { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 8px; grid-column: 1 / -1; }
   .cat-btn {
     display: flex; flex-direction: column; align-items: center; gap: 6px;
     padding: 12px 6px; border-radius: var(--radius-sm);
@@ -450,36 +448,12 @@
     line-height: 1.45;
   }
 
-  /* ── MOBILE TOP BAR ── */
-  .mobile-topbar {
-    display: none;
-  }
-  @media (max-width: 680px) {
-    .mobile-topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-    }
-    .mobile-topbar-left { display: flex; flex-direction: column; gap: 2px; }
-    .mobile-logo { font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 700; color: var(--accent2); }
-    .mobile-user { font-size: 11px; color: var(--muted); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .mobile-topbar-right { display: flex; align-items: center; gap: 8px; }
-  }
-
   /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
 
-  /* ── BOTTOM NAV (mobile only, hidden on desktop) ── */
-  .bottom-nav {
-    display: none;
-  }
-
-  /* ── RESPONSIVE TABLET ── */
+  /* ── RESPONSIVE ── */
   @media (max-width: 900px) {
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .two-col, .analytics-grid { grid-template-columns: 1fr; }
@@ -487,152 +461,222 @@
     .sidebar { width: 200px; min-width: 200px; }
     .main { padding: 20px; }
   }
-
-  /* ── MOBILE / iPHONE ── */
   @media (max-width: 680px) {
-    /* Layout: stack vertically, sidebar hidden */
-    .app {
-      flex-direction: column;
-      height: 100dvh;
-      overflow: hidden;
-    }
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; min-width: unset; height: auto; flex-direction: row; overflow-x: auto; padding: 12px; }
+    .logo, .month-picker, .budget-widget { display: none; }
+    .nav-section { display: flex; flex-direction: row; padding: 0; }
+    .nav-label { display: none; }
+    .nav-item { flex-direction: column; gap: 4px; font-size: 11px; padding: 8px 10px; white-space: nowrap; }
+    .main { padding: 16px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .cat-picker { grid-template-columns: repeat(3, 1fr); }
+    .budget-grid { grid-template-columns: 1fr; }
+  }
+
+
+  /* ── PREMIUM UI / MOTION UPGRADE ── */
+  html { scroll-behavior: smooth; }
+  body {
+    background:
+      radial-gradient(circle at 12% 10%, rgba(124,106,247,.20), transparent 30%),
+      radial-gradient(circle at 88% 18%, rgba(62,207,207,.12), transparent 26%),
+      radial-gradient(circle at 65% 95%, rgba(240,98,146,.10), transparent 34%),
+      var(--bg);
+    overflow: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: radial-gradient(circle at center, #000, transparent 78%);
+    z-index: 0;
+  }
+  .app, .auth-screen { position: relative; z-index: 1; }
+  .sidebar {
+    background: linear-gradient(180deg, rgba(24,24,31,.92), rgba(18,18,24,.92));
+    backdrop-filter: blur(18px);
+    box-shadow: 18px 0 50px rgba(0,0,0,.18);
+  }
+  .logo {
+    position: relative;
+    background: linear-gradient(90deg, var(--accent2), #fff, #78f3ee);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .logo span { color: var(--muted); -webkit-text-fill-color: var(--muted); }
+  .nav-item {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid transparent;
+    transition: transform .18s ease, background .18s ease, border-color .18s ease, color .18s ease;
+  }
+  .nav-item:hover { transform: translateX(3px); border-color: var(--border2); }
+  .nav-item.active {
+    background: linear-gradient(135deg, rgba(124,106,247,.22), rgba(62,207,207,.08));
+    border-color: rgba(165,148,255,.25);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.03), 0 10px 30px rgba(124,106,247,.12);
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 10px; bottom: 10px;
+    width: 3px;
+    border-radius: 999px;
+    background: var(--accent2);
+    box-shadow: 0 0 12px var(--accent2);
+  }
+  .page.active { animation: pageEnter .32s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes pageEnter {
+    from { opacity: 0; transform: translateY(12px) scale(.992); filter: blur(4px); }
+    to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  }
+  .stat-card, .card, .budget-card, .budget-widget, .month-picker, .user-widget {
+    background: linear-gradient(180deg, rgba(34,34,48,.74), rgba(24,24,31,.86));
+    border-color: rgba(255,255,255,.08);
+    box-shadow: 0 16px 44px rgba(0,0,0,.22);
+    transition: transform .22s cubic-bezier(.2,.8,.2,1), border-color .22s ease, box-shadow .22s ease, background .22s ease;
+  }
+  .stat-card:hover, .card:hover, .budget-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(165,148,255,.34);
+    box-shadow: 0 22px 62px rgba(0,0,0,.34), 0 0 0 1px rgba(124,106,247,.08);
+  }
+  .stat-card { animation: cardRise .45s cubic-bezier(.2,.8,.2,1) both; }
+  .stat-card:nth-child(2) { animation-delay: .05s; }
+  .stat-card:nth-child(3) { animation-delay: .10s; }
+  .stat-card:nth-child(4) { animation-delay: .15s; }
+  @keyframes cardRise {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .stat-value {
+    background: linear-gradient(90deg, #fff, rgba(255,255,255,.74));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .stat-value.negative { color: #e74c3c; background: none; }
+  .form-group input, .form-group select, .form-group textarea,
+  .txn-controls input, .txn-controls select,
+  .auth-card input, .budget-input-row input {
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus,
+  .txn-controls input:focus, .txn-controls select:focus,
+  .auth-card input:focus, .budget-input-row input:focus {
+    box-shadow: 0 0 0 4px rgba(124,106,247,.14), 0 10px 28px rgba(0,0,0,.16);
+    transform: translateY(-1px);
+  }
+  .cat-btn, .type-btn, .submit-btn, .auth-btn, .budget-input-row button, .logout-btn, .delete-btn {
+    position: relative;
+    overflow: hidden;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease, color .18s ease;
+  }
+  .cat-btn:hover, .type-btn:hover, .submit-btn:hover, .auth-btn:hover, .budget-input-row button:hover {
+    transform: translateY(-2px);
+  }
+  .cat-btn.selected {
+    background: linear-gradient(135deg, rgba(124,106,247,.22), rgba(165,148,255,.08));
+    box-shadow: 0 12px 30px rgba(124,106,247,.14);
+  }
+  .cat-btn .emoji { transition: transform .22s ease; }
+  .cat-btn:hover .emoji, .cat-btn.selected .emoji { transform: translateY(-2px) scale(1.12); }
+  .submit-btn, .auth-btn.primary, .budget-input-row button {
+    background: linear-gradient(135deg, var(--accent), #9b5cff);
+    box-shadow: 0 12px 32px rgba(124,106,247,.26);
+  }
+  .submit-btn:hover, .auth-btn.primary:hover, .budget-input-row button:hover {
+    box-shadow: 0 16px 40px rgba(124,106,247,.34);
+  }
+  button:disabled, .is-loading {
+    opacity: .72;
+    cursor: wait !important;
+    transform: none !important;
+  }
+  .is-loading::after {
+    content: '';
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: -2px;
+    margin-left: 8px;
+    animation: spin .72s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .txn-table tbody tr { animation: rowEnter .22s ease both; }
+  @keyframes rowEnter { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+  .txn-table tbody tr:hover { background: rgba(124,106,247,.08); }
+  .cat-chip { border: 1px solid rgba(255,255,255,.08); }
+  .budget-progress-fill, .budget-fill, .cat-bar-fill { position: relative; overflow: hidden; }
+  .budget-progress-fill::after, .budget-fill::after, .cat-bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+    transform: translateX(-100%);
+    animation: sheen 2.2s ease-in-out infinite;
+  }
+  @keyframes sheen { 60%, 100% { transform: translateX(120%); } }
+  #toast {
+    border-radius: 999px;
+    background: rgba(34,34,48,.86);
+    backdrop-filter: blur(18px);
+    border-color: rgba(165,148,255,.26);
+    box-shadow: 0 18px 55px rgba(0,0,0,.38), 0 0 28px rgba(124,106,247,.14);
+  }
+  .auth-screen {
+    background:
+      radial-gradient(circle at 50% 0%, rgba(124,106,247,.24), transparent 34%),
+      radial-gradient(circle at 20% 85%, rgba(62,207,207,.12), transparent 28%),
+      var(--bg);
+  }
+  .auth-card {
+    background: linear-gradient(180deg, rgba(34,34,48,.78), rgba(24,24,31,.92));
+    backdrop-filter: blur(22px);
+    animation: authPop .42s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes authPop {
+    from { opacity:0; transform: translateY(18px) scale(.97); }
+    to { opacity:1; transform: translateY(0) scale(1); }
+  }
+  .auth-title {
+    background: linear-gradient(90deg, var(--accent2), #fff, #78f3ee);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .auth-tab.active { box-shadow: 0 12px 32px rgba(124,106,247,.18); }
+  .ripple {
+    position: absolute;
+    border-radius: 999px;
+    transform: scale(0);
+    background: rgba(255,255,255,.28);
+    pointer-events: none;
+    animation: ripple .55s ease-out forwards;
+  }
+  @keyframes ripple { to { transform: scale(12); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  }
+  @media (max-width: 680px) {
     .sidebar {
-      display: none !important;
-    }
-
-    /* Main content area scrolls above bottom nav */
-    .main {
-      flex: 1;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      padding: 16px 16px calc(80px + env(safe-area-inset-bottom));
-      padding-top: calc(16px + env(safe-area-inset-top));
-    }
-
-    /* ── BOTTOM NAVIGATION BAR ── */
-    .bottom-nav {
-      display: flex;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-      background: rgba(24, 24, 31, 0.92);
+      position: sticky;
+      top: 0;
+      z-index: 30;
       backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-top: 1px solid var(--border);
-      padding-bottom: env(safe-area-inset-bottom);
+      box-shadow: 0 12px 34px rgba(0,0,0,.24);
     }
-    .bottom-nav-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      padding: 10px 0 8px;
-      cursor: pointer;
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 500;
-      transition: color 0.15s;
-      -webkit-tap-highlight-color: transparent;
-      min-height: 56px;
-    }
-    .bottom-nav-item .nav-icon { font-size: 22px; line-height: 1; }
-    .bottom-nav-item.active { color: var(--accent2); }
-    .bottom-nav-item:active { opacity: 0.7; }
-
-    /* ── PAGE HEADER ── */
-    .page-header {
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .page-header .submit-btn {
-      width: 100%;
-      padding: 12px 18px;
-      font-size: 14px;
-    }
-    .page-title { font-size: 20px; }
-
-    /* ── STAT CARDS ── */
-    .stats-grid {
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-    .stat-card { padding: 14px 14px; }
-    .stat-value { font-size: 18px; }
-    .stat-label { font-size: 11px; }
-
-    /* ── CARDS ── */
-    .card { padding: 16px; }
-    .two-col, .analytics-grid { grid-template-columns: 1fr; gap: 14px; }
-    .analytics-full { grid-column: 1; }
-
-    /* ── FORM ── */
-    .form-grid { grid-template-columns: 1fr; gap: 14px; }
-    .form-group.full { grid-column: 1; }
-    .type-toggle { grid-column: 1; }
-    .cat-picker {
-      grid-template-columns: repeat(5, 1fr);
-      grid-column: 1;
-      gap: 6px;
-    }
-    .cat-btn { padding: 10px 4px; font-size: 11px; }
-    .cat-btn .emoji { font-size: 20px; }
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      font-size: 16px; /* prevent iOS zoom */
-      padding: 13px 14px;
-    }
-    .submit-btn { padding: 15px; font-size: 15px; }
-
-    /* ── TRANSACTIONS ── */
-    .txn-controls {
-      flex-direction: column;
-      gap: 10px;
-    }
-    .txn-controls input,
-    .txn-controls select {
-      width: 100%;
-      font-size: 16px;
-      padding: 11px 14px;
-    }
-    .txn-table { font-size: 13px; }
-    .txn-table td { padding: 10px 10px; }
-    .txn-table th { padding: 0 10px 10px; }
-
-    /* ── BUDGET ── */
-    .budget-grid { grid-template-columns: 1fr; gap: 12px; }
-    .budget-input-row input { font-size: 16px; }
-
-    /* ── CHART ── */
-    .chart-wrap { height: 180px; }
-
-    /* ── AUTH SCREEN ── */
-    .auth-screen { padding: 16px; align-items: flex-end; }
-    .auth-card {
-      border-radius: 24px 24px 16px 16px;
-      padding: 28px 20px;
-      padding-bottom: calc(28px + env(safe-area-inset-bottom));
-    }
-    .auth-card input { font-size: 16px; }
-
-    /* ── MINI TXN LIST ── */
-    .txn-mini { padding: 12px 0; }
-    .txn-icon { width: 40px; height: 40px; }
+    .nav-item.active::before { display: none; }
+    .nav-item:hover { transform: translateY(-2px); }
   }
 
-  /* ── EXTRA SMALL (iPhone SE) ── */
-  @media (max-width: 375px) {
-    .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-    .stat-value { font-size: 16px; }
-    .cat-picker { grid-template-columns: repeat(5, 1fr); gap: 4px; }
-    .cat-btn { padding: 8px 2px; font-size: 10px; }
-  }
 </style>
 </head>
 <body>
@@ -715,18 +759,6 @@
   <!-- MAIN -->
   <main class="main">
 
-    <!-- MOBILE TOP BAR -->
-    <div class="mobile-topbar" id="mobileTopbar">
-      <div class="mobile-topbar-left">
-        <div class="mobile-logo">💸 Ví Cá Nhân</div>
-        <div class="mobile-user" id="mobileUserEmail"></div>
-      </div>
-      <div class="mobile-topbar-right">
-        <select id="monthFilterMobile" onchange="syncMobileFilter()" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:6px 10px;font-size:13px;font-family:'Be Vietnam Pro',sans-serif;outline:none;"></select>
-        <button onclick="logout()" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--muted);padding:6px 10px;font-size:12px;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;">Thoát</button>
-      </div>
-    </div>
-
     <!-- OVERVIEW -->
     <div class="page active" id="page-overview">
       <div class="page-header">
@@ -799,6 +831,7 @@
             <button class="cat-btn" data-cat="mua-sam" onclick="setCat(this)"><span class="emoji">🛍️</span>Mua sắm</button>
             <button class="cat-btn" data-cat="xang" onclick="setCat(this)"><span class="emoji">⛽</span>Xăng</button>
             <button class="cat-btn" data-cat="dau-tu" onclick="setCat(this)"><span class="emoji">📈</span>Đầu tư</button>
+            <button class="cat-btn" data-cat="giai-tri" onclick="setCat(this)"><span class="emoji">🎮</span>Giải trí</button>
           </div>
 
           <div class="form-group">
@@ -818,7 +851,7 @@
             <textarea id="f-note" placeholder="Thêm ghi chú..."></textarea>
           </div>
         </div>
-        <button class="submit-btn" onclick="addTransaction()">Lưu giao dịch ✓</button>
+        <button class="submit-btn" id="saveTxnBtn" onclick="addTransaction()">Lưu giao dịch ✓</button>
       </div>
     </div>
 
@@ -840,6 +873,7 @@
           <option value="mua-sam">🛍️ Mua sắm</option>
           <option value="xang">⛽ Xăng</option>
           <option value="dau-tu">📈 Đầu tư</option>
+          <option value="giai-tri">🎮 Giải trí</option>
           <option value="other">💼 Khác</option>
         </select>
         <select id="typeFilter" onchange="renderTransactions()">
@@ -907,30 +941,6 @@
 
 <div id="toast"></div>
 
-<!-- BOTTOM NAV (mobile) -->
-<nav class="bottom-nav" id="bottomNav">
-  <div class="bottom-nav-item active" id="bnav-overview" onclick="showPage('overview')">
-    <span class="nav-icon">📊</span>
-    <span>Tổng quan</span>
-  </div>
-  <div class="bottom-nav-item" id="bnav-add" onclick="showPage('add')">
-    <span class="nav-icon">➕</span>
-    <span>Thêm</span>
-  </div>
-  <div class="bottom-nav-item" id="bnav-transactions" onclick="showPage('transactions')">
-    <span class="nav-icon">📋</span>
-    <span>Lịch sử</span>
-  </div>
-  <div class="bottom-nav-item" id="bnav-budget" onclick="showPage('budget')">
-    <span class="nav-icon">🎯</span>
-    <span>Ngân sách</span>
-  </div>
-  <div class="bottom-nav-item" id="bnav-analytics" onclick="showPage('analytics')">
-    <span class="nav-icon">📈</span>
-    <span>Phân tích</span>
-  </div>
-</nav>
-
 <script>
 // ───────── DATA ─────────
 const CATS = {
@@ -939,6 +949,7 @@ const CATS = {
   'mua-sam':{ label:'Mua sắm', emoji:'🛍️', color:'#f06292' },
   xang:    { label:'Xăng',    emoji:'⛽', color:'#ffb347' },
   'dau-tu':{ label:'Đầu tư',  emoji:'📈', color:'#4cde8b' },
+  'giai-tri':{ label:'Giải trí', emoji:'🎮', color:'#9b5cff' },
   other:   { label:'Khác',    emoji:'💼', color:'#8b8aa3' }
 };
 
@@ -1002,6 +1013,34 @@ function toast(msg) {
   setTimeout(()=>el.classList.remove('show'), 2200);
 }
 
+function setButtonLoading(btn, loading, loadingText) {
+  if (!btn) return;
+  if (loading) {
+    btn.dataset.originalText = btn.textContent;
+    btn.textContent = loadingText || btn.textContent;
+    btn.disabled = true;
+    btn.classList.add('is-loading');
+  } else {
+    btn.textContent = btn.dataset.originalText || btn.textContent;
+    btn.disabled = false;
+    btn.classList.remove('is-loading');
+  }
+}
+
+document.addEventListener('click', (e) => {
+  const target = e.target.closest('button, .nav-item, .cat-btn, .type-btn');
+  if (!target || target.disabled) return;
+  const rect = target.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const ripple = document.createElement('span');
+  ripple.className = 'ripple';
+  ripple.style.width = ripple.style.height = size + 'px';
+  ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+  ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+  target.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 600);
+});
+
 // ───────── AUTH + INIT ─────────
 window.addEventListener('DOMContentLoaded', initApp);
 window.addEventListener('keydown', (e) => {
@@ -1050,8 +1089,14 @@ function setAuthMode(mode) {
 }
 
 async function submitAuthForm() {
-  if (authMode === 'signup') return signup();
-  return login();
+  const btn = document.getElementById('authSubmitBtn');
+  setButtonLoading(btn, true, authMode === 'signup' ? 'Đang tạo' : 'Đang vào');
+  try {
+    if (authMode === 'signup') return await signup();
+    return await login();
+  } finally {
+    setButtonLoading(btn, false);
+  }
 }
 
 async function signup() {
@@ -1158,6 +1203,9 @@ async function loadAllData() {
 
 async function loadTransactions() {
   if (!currentUser) return;
+  const saveBtn = document.getElementById('saveTxnBtn');
+  setButtonLoading(saveBtn, true, 'Đang lưu');
+
   const { data, error } = await supabaseClient
     .from('expense_transactions')
     .select('*')
@@ -1189,29 +1237,15 @@ async function loadBudgets() {
 
 function populateMonthFilter() {
   const sel = document.getElementById('monthFilter');
-  const selMobile = document.getElementById('monthFilterMobile');
   const months = new Set(txns.map(t=>monthOf(t.date)));
   const cm = monthOf(today());
   months.add(cm);
   const sorted = Array.from(months).sort().reverse();
-  const opts = sorted.map(m => {
+  sel.innerHTML = sorted.map(m => {
     const [y,mo] = m.split('-');
     const label = `Tháng ${parseInt(mo)}/${y}`;
     return `<option value="${m}" ${m===cm?'selected':''}>${label}</option>`;
   }).join('');
-  sel.innerHTML = opts;
-  if(selMobile) selMobile.innerHTML = opts;
-  // Populate mobile user
-  const mobileUserEl = document.getElementById('mobileUserEmail');
-  if(mobileUserEl && currentUser) mobileUserEl.textContent = currentUser.email || '';
-}
-
-function syncMobileFilter() {
-  const mob = document.getElementById('monthFilterMobile');
-  const desk = document.getElementById('monthFilter');
-  if(mob && desk) desk.value = mob.value;
-  filterMonth = mob?.value || desk?.value || monthOf(today());
-  loadBudgets().then(()=>{ refreshAll(); renderTransactions(); renderBudget(); });
 }
 
 async function applyFilters() {
@@ -1229,16 +1263,17 @@ function getMonthTxns(month) {
 
 // ───────── NAV ─────────
 function showPage(name) {
+  const nextPage = document.getElementById('page-'+name);
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
+  if (nextPage) {
+    nextPage.classList.add('active');
+    nextPage.style.animation = 'none';
+    void nextPage.offsetWidth;
+    nextPage.style.animation = '';
+  }
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const map = {overview:0,add:1,transactions:2,budget:3,analytics:4};
   document.querySelectorAll('.nav-item')[map[name]]?.classList.add('active');
-  // Sync bottom nav
-  document.querySelectorAll('.bottom-nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('bnav-'+name)?.classList.add('active');
-  // Scroll to top
-  document.querySelector('.main')?.scrollTo(0, 0);
   if(name==='overview') renderOverview();
   if(name==='transactions') renderTransactions();
   if(name==='analytics') renderAnalytics();
@@ -1260,7 +1295,8 @@ function setType(t) {
       <button class="cat-btn" data-cat="uong" onclick="setCat(this)"><span class="emoji">☕</span>Uống</button>
       <button class="cat-btn" data-cat="mua-sam" onclick="setCat(this)"><span class="emoji">🛍️</span>Mua sắm</button>
       <button class="cat-btn" data-cat="xang" onclick="setCat(this)"><span class="emoji">⛽</span>Xăng</button>
-      <button class="cat-btn" data-cat="dau-tu" onclick="setCat(this)"><span class="emoji">📈</span>Đầu tư</button>`;
+      <button class="cat-btn" data-cat="dau-tu" onclick="setCat(this)"><span class="emoji">📈</span>Đầu tư</button>
+      <button class="cat-btn" data-cat="giai-tri" onclick="setCat(this)"><span class="emoji">🎮</span>Giải trí</button>`;
     selectedCat = 'an';
   }
 }
@@ -1298,10 +1334,12 @@ async function addTransaction() {
     .single();
 
   if (error) {
+    setButtonLoading(saveBtn, false);
     toast('Lưu thất bại: ' + error.message);
     return;
   }
 
+  setButtonLoading(saveBtn, false);
   txns.unshift(mapTxn(data));
 
   document.getElementById('f-amount').value = '';
@@ -1494,7 +1532,7 @@ function renderBudget() {
   const byCat = {};
   mTxns.filter(t=>t.type==='expense').forEach(t=>{ byCat[t.cat]=(byCat[t.cat]||0)+t.amount; });
 
-  const cats = ['an','uong','mua-sam','xang','dau-tu'];
+  const cats = ['an','uong','mua-sam','xang','dau-tu','giai-tri'];
   const el = document.getElementById('budgetCards');
   el.innerHTML = cats.map(cat=>{
     const c = CATS[cat];
@@ -1527,6 +1565,8 @@ async function saveBudget(cat) {
   if (!currentUser) { toast('Vui lòng đăng nhập'); return; }
   const val = parseFloat(document.getElementById('blimit-'+cat).value)||0;
   const m = getFilterMonth();
+  const btn = document.activeElement?.tagName === 'BUTTON' ? document.activeElement : null;
+  setButtonLoading(btn, true, 'Lưu');
 
   const { error } = await supabaseClient
     .from('expense_budgets')
@@ -1538,10 +1578,12 @@ async function saveBudget(cat) {
     }], { onConflict: 'user_id,cat,month' });
 
   if (error) {
+    setButtonLoading(btn, false);
     toast('Lưu ngân sách thất bại: ' + error.message);
     return;
   }
 
+  setButtonLoading(btn, false);
   budgets[cat] = val;
   renderBudget();
   refreshAll();
